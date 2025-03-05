@@ -1,0 +1,66 @@
+CNN Image Classification - Fruits Dataset
+This project implements Convolutional Neural Network (CNN) Transfer Learning using MobileNetV2 to classify fruits from the Kaggle Fruit Classification Dataset. The model is trained and tested in Google Colab.
+
+📂 Project Structure
+
+/cnn-fruit-classification
+│── model_training.ipynb      # Jupyter Notebook for training and evaluation
+│── image_classifier.h5       # Saved trained model
+│── README.md                 # Project documentation
+│── requirements.txt          # List of dependencies
+📥 Dataset
+The dataset is downloaded directly from Kaggle using kagglehub. It consists of 10 fruit classes and is divided into train, valid, and test sets.
+
+Download Dataset via Kaggle API
+Ensure you have your Kaggle API key set up in Colab:
+import kagglehub
+dataset_path = kagglehub.dataset_download("karimabdulnabi/fruit-classification10-class")
+print("Dataset downloaded to:", dataset_path)
+
+📜 Requirements
+Install dependencies before running the project:
+pip install tensorflow keras kaggle kagglehub matplotlib numpy
+
+🛠️ Model Architecture
+The project uses MobileNetV2 as a feature extractor:
+
+Pretrained Model: MobileNetV2 (without top layer)
+New Layers: Global Average Pooling + Dense Layers
+Final Activation: softmax (since it's multi-class classification)
+
+
+base_model = keras.applications.MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+base_model.trainable = False  # Freezing the base model
+
+model = keras.Sequential([
+    base_model,
+    keras.layers.GlobalAveragePooling2D(),
+    keras.layers.Dense(256, activation='relu'),
+    keras.layers.Dropout(0.5),
+    keras.layers.Dense(10, activation='softmax')  # 10 classes
+])
+
+📊 Training the Model
+The model is trained with data augmentation for better generalization.
+epochs = 10
+history = model.fit(train_generator, validation_data=val_generator, epochs=epochs)
+
+🔍 Making Predictions
+You can use the trained model to classify new images:
+def predict_image(image_path, model):
+    img = keras.preprocessing.image.load_img(image_path, target_size=(224, 224))
+    img_array = keras.preprocessing.image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0) / 255.0
+    prediction = model.predict(img_array)
+    return np.argmax(prediction, axis=1)  # Returns the predicted class index
+Example:
+image_path = "path/to/test/image.jpg"
+print("Predicted Class:", predict_image(image_path, model))
+
+📈 Results
+After training for 10 epochs, we achieve an accuracy of approximately X% (replace with actual result). The accuracy and loss curves are plotted using Matplotlib.
+
+🚀 Future Improvements
+Fine-tune more layers in MobileNetV2 for better accuracy.
+Increase dataset size or use data augmentation for robustness.
+Deploy as a web app using Flask or FastAPI.
